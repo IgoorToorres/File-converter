@@ -1,5 +1,6 @@
 package com.igor.fileconverter.shared.error;
 
+import com.igor.fileconverter.domain.exception.DomainException;
 import com.igor.fileconverter.domain.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,24 @@ public class GlobalExceptionHandler {
                 status.value(),
                 "INTERNAL_SERVER_ERROR",
                 "Erro interno inesperado",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ApiErrorResponse> handleDomainException(
+            DomainException exception,
+            HttpServletRequest request
+    ){
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                "DOMAIN_ERROR",
+                exception.getMessage(),
                 request.getRequestURI()
         );
 
