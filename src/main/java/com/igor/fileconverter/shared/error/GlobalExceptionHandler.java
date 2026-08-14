@@ -2,6 +2,7 @@ package com.igor.fileconverter.shared.error;
 
 import com.igor.fileconverter.domain.exception.DomainException;
 import com.igor.fileconverter.domain.exception.ResourceNotFoundException;
+import com.igor.fileconverter.domain.exception.UnsupportedConversionException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,17 +50,35 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(response);
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(DomainException.class)
     public ResponseEntity<ApiErrorResponse> handleDomainException(
             DomainException exception,
             HttpServletRequest request
-    ){
+    ) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
         ApiErrorResponse response = new ApiErrorResponse(
                 Instant.now(),
                 status.value(),
                 "DOMAIN_ERROR",
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(UnsupportedConversionException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnsupportedConversion(
+            UnsupportedConversionException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                "UNSUPPORTED_CONVERSION",
                 exception.getMessage(),
                 request.getRequestURI()
         );
