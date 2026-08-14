@@ -1,3 +1,6 @@
 spring:
   application:
     name: file-converter
+file-converter:
+  storage:
+    root-directory: storage
