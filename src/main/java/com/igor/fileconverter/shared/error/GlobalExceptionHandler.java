@@ -6,6 +6,7 @@ import com.igor.fileconverter.domain.exception.UnsupportedConversionException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -80,6 +81,24 @@ public class GlobalExceptionHandler {
                 status.value(),
                 "UNSUPPORTED_CONVERSION",
                 exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.PAYLOAD_TOO_LARGE;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                "FILE_TOO_LARGE",
+                "Arquivo excede o tamanho máximo permitido",
                 request.getRequestURI()
         );
 

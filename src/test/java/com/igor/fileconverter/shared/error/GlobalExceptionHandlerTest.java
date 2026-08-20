@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +42,16 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.path").value("/test/unexpected"));
     }
 
+    @Test
+    void shouldReturnPayloadTooLargeWhenUploadExceedsLimit() throws Exception {
+        mockMvc.perform(get("/test/file-too-large"))
+                .andExpect(status().isPayloadTooLarge())
+                .andExpect(jsonPath("$.status").value(413))
+                .andExpect(jsonPath("$.error").value("FILE_TOO_LARGE"))
+                .andExpect(jsonPath("$.message").value("Arquivo excede o tamanho máximo permitido"))
+                .andExpect(jsonPath("$.path").value("/test/file-too-large"));
+    }
+
     @RestController
     @RequestMapping("/test")
     static class TestController {
@@ -53,6 +64,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/unexpected")
         void unexpected() {
             throw new RuntimeException("Erro técnico");
+        }
+
+        @GetMapping("/file-too-large")
+        void fileTooLarge() {
+            throw new MaxUploadSizeExceededException(10);
         }
     }
 }
