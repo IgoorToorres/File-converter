@@ -1,15 +1,18 @@
 package com.igor.fileconverter.application.usecase;
 
 import com.igor.fileconverter.application.service.FileFormatDetector;
+import com.igor.fileconverter.application.service.FileMimeTypeValidator;
 import com.igor.fileconverter.application.service.FileStorageService;
 import com.igor.fileconverter.application.service.SupportedConversionPolicy;
 import com.igor.fileconverter.domain.entity.Conversion;
 import com.igor.fileconverter.domain.enums.ConversionStatus;
 import com.igor.fileconverter.domain.enums.FileFormat;
 import com.igor.fileconverter.domain.exception.DomainException;
+import com.igor.fileconverter.domain.exception.InvalidFileTypeException;
 import com.igor.fileconverter.domain.exception.UnsupportedConversionException;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -22,10 +25,12 @@ class CreateConversionUseCaseTest {
 
     private final FakeFileStorageService fileStorageService = new FakeFileStorageService();
     private final FileFormatDetector fileFormatDetector = originalFileName -> FileFormat.DOCX;
+    private final FakeFileMimeTypeValidator fileMimeTypeValidator = new FakeFileMimeTypeValidator();
     private final FakeSupportedConversionPolicy supportedConversionPolicy = new FakeSupportedConversionPolicy();
     private final CreateConversionUseCase useCase = new CreateConversionUseCase(
             fileStorageService,
             fileFormatDetector,
+            fileMimeTypeValidator,
             supportedConversionPolicy
     );
 
@@ -48,6 +53,7 @@ class CreateConversionUseCaseTest {
         assertEquals(FileFormat.PDF, conversion.getTargetFormat());
         assertEquals("storage-key.docx", conversion.getInputStorageKey());
         assertEquals("documento.docx", fileStorageService.originalFileName);
+        assertEquals(FileFormat.DOCX, fileMimeTypeValidator.expectedFormat);
         assertEquals(FileFormat.DOCX, supportedConversionPolicy.sourceFormat);
         assertEquals(FileFormat.PDF, supportedConversionPolicy.targetFormat);
     }
@@ -75,6 +81,21 @@ class CreateConversionUseCaseTest {
         supportedConversionPolicy.reject = true;
 
         assertThrows(UnsupportedConversionException.class, () -> useCase.execute(file, FileFormat.XLSX));
+        assertEquals(0, fileStorageService.storeCalls);
+    }
+
+    @Test
+    void shouldRejectInvalidMimeTypeBeforeValidatingPolicyAndStoringFile() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "documento.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "conteudo".getBytes()
+        );
+        fileMimeTypeValidator.reject = true;
+
+        assertThrows(InvalidFileTypeException.class, () -> useCase.execute(file, FileFormat.PDF));
+        assertEquals(0, supportedConversionPolicy.validateCalls);
         assertEquals(0, fileStorageService.storeCalls);
     }
 
@@ -110,14 +131,31 @@ class CreateConversionUseCaseTest {
         private FileFormat sourceFormat;
         private FileFormat targetFormat;
         private boolean reject;
+        private int validateCalls;
 
         @Override
         public void validate(FileFormat sourceFormat, FileFormat targetFormat) {
+            this.validateCalls++;
             this.sourceFormat = sourceFormat;
             this.targetFormat = targetFormat;
 
             if (reject) {
                 throw new UnsupportedConversionException("Conversão não suportada");
+            }
+        }
+    }
+
+    private static class FakeFileMimeTypeValidator implements FileMimeTypeValidator {
+
+        private FileFormat expectedFormat;
+        private boolean reject;
+
+        @Override
+        public void validate(MultipartFile file, FileFormat expectedFormat) {
+            this.expectedFormat = expectedFormat;
+
+            if (reject) {
+                throw new InvalidFileTypeException("Tipo real do arquivo inválido");
             }
         }
     }

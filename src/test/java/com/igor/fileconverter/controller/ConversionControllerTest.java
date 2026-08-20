@@ -49,7 +49,7 @@ class ConversionControllerTest {
 
         @Bean
         CreateConversionUseCase createConversionUseCase() {
-            return new CreateConversionUseCase(null, null, null) {
+            return new CreateConversionUseCase(null, null, null, null) {
                 @Override
                 public Conversion execute(MultipartFile file, FileFormat targetFormat) {
                     return Conversion.create(

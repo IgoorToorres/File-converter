@@ -1,6 +1,7 @@
 package com.igor.fileconverter.application.usecase;
 
 import com.igor.fileconverter.application.service.FileFormatDetector;
+import com.igor.fileconverter.application.service.FileMimeTypeValidator;
 import com.igor.fileconverter.application.service.FileStorageService;
 import com.igor.fileconverter.application.service.SupportedConversionPolicy;
 import com.igor.fileconverter.domain.entity.Conversion;
@@ -15,15 +16,18 @@ import java.io.IOException;
 public class CreateConversionUseCase {
     private final FileStorageService fileStorageService;
     private final FileFormatDetector fileFormatDetector;
+    private final FileMimeTypeValidator fileMimeTypeValidator;
     private final SupportedConversionPolicy supportedConversionPolicy;
 
     public CreateConversionUseCase(
             FileStorageService fileStorageService,
             FileFormatDetector fileFormatDetector,
+            FileMimeTypeValidator fileMimeTypeValidator,
             SupportedConversionPolicy supportedConversionPolicy
     ) {
         this.fileStorageService = fileStorageService;
         this.fileFormatDetector = fileFormatDetector;
+        this.fileMimeTypeValidator = fileMimeTypeValidator;
         this.supportedConversionPolicy = supportedConversionPolicy;
     }
 
@@ -36,6 +40,7 @@ public class CreateConversionUseCase {
 
         String originalFileName = file.getOriginalFilename();
         FileFormat sourceFormat = fileFormatDetector.detect(originalFileName);
+        fileMimeTypeValidator.validate(file, sourceFormat);
         supportedConversionPolicy.validate(sourceFormat, targetFormat);
 
         String inputStorageKey = storeFile(file, originalFileName);

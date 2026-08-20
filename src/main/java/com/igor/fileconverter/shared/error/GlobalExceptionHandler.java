@@ -1,6 +1,7 @@
 package com.igor.fileconverter.shared.error;
 
 import com.igor.fileconverter.domain.exception.DomainException;
+import com.igor.fileconverter.domain.exception.InvalidFileTypeException;
 import com.igor.fileconverter.domain.exception.ResourceNotFoundException;
 import com.igor.fileconverter.domain.exception.UnsupportedConversionException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -80,6 +81,24 @@ public class GlobalExceptionHandler {
                 Instant.now(),
                 status.value(),
                 "UNSUPPORTED_CONVERSION",
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(InvalidFileTypeException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidFileType(
+            InvalidFileTypeException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                "INVALID_FILE_TYPE",
                 exception.getMessage(),
                 request.getRequestURI()
         );

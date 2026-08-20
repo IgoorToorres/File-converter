@@ -1,5 +1,6 @@
 package com.igor.fileconverter.shared.error;
 
+import com.igor.fileconverter.domain.exception.InvalidFileTypeException;
 import com.igor.fileconverter.domain.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,16 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.path").value("/test/file-too-large"));
     }
 
+    @Test
+    void shouldReturnBadRequestWhenFileTypeIsInvalid() throws Exception {
+        mockMvc.perform(get("/test/invalid-file-type"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("INVALID_FILE_TYPE"))
+                .andExpect(jsonPath("$.message").value("Tipo real do arquivo não corresponde ao formato informado"))
+                .andExpect(jsonPath("$.path").value("/test/invalid-file-type"));
+    }
+
     @RestController
     @RequestMapping("/test")
     static class TestController {
@@ -69,6 +80,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/file-too-large")
         void fileTooLarge() {
             throw new MaxUploadSizeExceededException(10);
+        }
+
+        @GetMapping("/invalid-file-type")
+        void invalidFileType() {
+            throw new InvalidFileTypeException("Tipo real do arquivo não corresponde ao formato informado");
         }
     }
 }
