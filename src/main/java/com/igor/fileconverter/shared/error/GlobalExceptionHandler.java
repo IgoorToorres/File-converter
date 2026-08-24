@@ -1,9 +1,6 @@
 package com.igor.fileconverter.shared.error;
 
-import com.igor.fileconverter.domain.exception.DomainException;
-import com.igor.fileconverter.domain.exception.InvalidFileTypeException;
-import com.igor.fileconverter.domain.exception.ResourceNotFoundException;
-import com.igor.fileconverter.domain.exception.UnsupportedConversionException;
+import com.igor.fileconverter.domain.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -118,6 +115,24 @@ public class GlobalExceptionHandler {
                 status.value(),
                 "FILE_TOO_LARGE",
                 "Arquivo excede o tamanho máximo permitido",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(ConversionProcessingException.class)
+    public ResponseEntity<ApiErrorResponse> handleConversionProcessing(
+            ConversionProcessingException exception,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                "CONVERSION_PROCESSING_ERROR",
+                exception.getMessage(),
                 request.getRequestURI()
         );
 

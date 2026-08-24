@@ -1,5 +1,6 @@
 package com.igor.fileconverter.shared.error;
 
+import com.igor.fileconverter.domain.exception.ConversionProcessingException;
 import com.igor.fileconverter.domain.exception.InvalidFileTypeException;
 import com.igor.fileconverter.domain.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,16 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.path").value("/test/invalid-file-type"));
     }
 
+    @Test
+    void shouldReturnInternalServerErrorWhenConversionProcessingFails() throws Exception {
+        mockMvc.perform(get("/test/conversion-processing-error"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.error").value("CONVERSION_PROCESSING_ERROR"))
+                .andExpect(jsonPath("$.message").value("LibreOffice falhou ao converter arquivo"))
+                .andExpect(jsonPath("$.path").value("/test/conversion-processing-error"));
+    }
+
     @RestController
     @RequestMapping("/test")
     static class TestController {
@@ -85,6 +96,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/invalid-file-type")
         void invalidFileType() {
             throw new InvalidFileTypeException("Tipo real do arquivo não corresponde ao formato informado");
+        }
+
+        @GetMapping("/conversion-processing-error")
+        void conversionProcessingError() {
+            throw new ConversionProcessingException("LibreOffice falhou ao converter arquivo");
         }
     }
 }
