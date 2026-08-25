@@ -37,11 +37,12 @@ class ConversionControllerTest {
                         .file(file)
                         .param("targetFormat", "PDF"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.status").value("COMPLETED"))
                 .andExpect(jsonPath("$.originalFileName").value("documento.docx"))
                 .andExpect(jsonPath("$.sourceFormat").value("DOCX"))
                 .andExpect(jsonPath("$.targetFormat").value("PDF"))
-                .andExpect(jsonPath("$.inputStorageKey").value("storage-key.docx"));
+                .andExpect(jsonPath("$.inputStorageKey").value("input-storage-key.docx"))
+                .andExpect(jsonPath("$.outputStorageKey").value("output-storage-key.pdf"));
     }
 
     @TestConfiguration
@@ -49,16 +50,21 @@ class ConversionControllerTest {
 
         @Bean
         CreateConversionUseCase createConversionUseCase() {
-            return new CreateConversionUseCase(null, null, null, null) {
+            return new CreateConversionUseCase(null, null, null, null, null) {
                 @Override
                 public Conversion execute(MultipartFile file, FileFormat targetFormat) {
-                    return Conversion.create(
+                    Conversion conversion = Conversion.create(
                             "documento.docx",
-                            "storage-key.docx",
+                            "input-storage-key.docx",
                             FileFormat.DOCX,
                             targetFormat,
-                            "storage-key.docx"
+                            "input-storage-key.docx"
                     );
+
+                    conversion.startProcessing();
+                    conversion.complete("output-storage-key.pdf");
+
+                    return conversion;
                 }
             };
         }

@@ -20,7 +20,9 @@ public record CreateConversionResponse(
         @Schema(description = "Formato solicitado para a conversao", example = "PDF")
         FileFormat targetFormat,
         @Schema(description = "Chave do arquivo salvo no storage local", example = "4d87b32a-6ef5-4d80-88b4-935883a4a27f.docx")
-        String inputStorageKey
+        String inputStorageKey,
+        @Schema(description = "Chave do arquivo convertido salvo no storage local", example = "0df45e38-8e93-4f6f-b518-6ad4fc8b9f34.pdf")
+        String outputStorageKey
 ) {
     public static CreateConversionResponse from(Conversion conversion) {
         return new CreateConversionResponse(
@@ -29,7 +31,8 @@ public record CreateConversionResponse(
                 conversion.getOriginalFileName(),
                 conversion.getSourceFormat(),
                 conversion.getTargetFormat(),
-                conversion.getInputStorageKey()
+                conversion.getInputStorageKey(),
+                conversion.getOutputStorageKey()
         );
     }
 }

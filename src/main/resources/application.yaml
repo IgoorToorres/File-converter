@@ -8,3 +8,5 @@ spring:
 file-converter:
   storage:
     root-directory: storage
+  conversion:
+    libre-office-command: libreoffice

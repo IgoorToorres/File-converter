@@ -1,5 +1,6 @@
 package com.igor.fileconverter.infrastructure.converter;
 
+import com.igor.fileconverter.config.ConversionProperties;
 import com.igor.fileconverter.domain.exception.ConversionProcessingException;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,12 @@ import java.util.concurrent.TimeUnit;
 public class ProcessBuilderLibreOfficeCommandExecutor implements LibreOfficeCommandExecutor {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(60);
+
+    private final ConversionProperties conversionProperties;
+
+    public ProcessBuilderLibreOfficeCommandExecutor(ConversionProperties conversionProperties) {
+        this.conversionProperties = conversionProperties;
+    }
 
     @Override
     public void convertToPdf(Path inputFile, Path outputDirectory) {
@@ -43,6 +50,11 @@ public class ProcessBuilderLibreOfficeCommandExecutor implements LibreOfficeComm
     }
 
     private void validate(Path inputFile, Path outputDirectory) {
+        if (conversionProperties.getLibreOfficeCommand() == null
+                || conversionProperties.getLibreOfficeCommand().isBlank()) {
+            throw new ConversionProcessingException("Comando do LibreOffice é obrigatório");
+        }
+
         if (inputFile == null) {
             throw new ConversionProcessingException("Arquivo de entrada é obrigatório");
         }
@@ -54,7 +66,7 @@ public class ProcessBuilderLibreOfficeCommandExecutor implements LibreOfficeComm
 
     private List<String> command(Path inputFile, Path outputDirectory) {
         return List.of(
-                "libreoffice",
+                conversionProperties.getLibreOfficeCommand(),
                 "--headless",
                 "--convert-to",
                 "pdf",

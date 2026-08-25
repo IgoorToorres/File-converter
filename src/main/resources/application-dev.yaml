@@ -4,3 +4,6 @@ spring:
       - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
       - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
       - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
+file-converter:
+  conversion:
+    libre-office-command: /Applications/LibreOffice.app/Contents/MacOS/soffice

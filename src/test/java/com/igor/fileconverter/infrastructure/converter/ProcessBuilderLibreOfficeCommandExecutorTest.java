@@ -1,5 +1,6 @@
 package com.igor.fileconverter.infrastructure.converter;
 
+import com.igor.fileconverter.config.ConversionProperties;
 import com.igor.fileconverter.domain.exception.ConversionProcessingException;
 import org.junit.jupiter.api.Test;
 
@@ -9,8 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ProcessBuilderLibreOfficeCommandExecutorTest {
 
+    private final ConversionProperties conversionProperties = new ConversionProperties();
     private final ProcessBuilderLibreOfficeCommandExecutor executor =
-            new ProcessBuilderLibreOfficeCommandExecutor();
+            new ProcessBuilderLibreOfficeCommandExecutor(conversionProperties);
 
     @Test
     void shouldRejectNullInputFile() {
@@ -25,6 +27,16 @@ class ProcessBuilderLibreOfficeCommandExecutorTest {
         assertThrows(
                 ConversionProcessingException.class,
                 () -> executor.convertToPdf(Path.of("documento.docx"), null)
+        );
+    }
+
+    @Test
+    void shouldRejectBlankLibreOfficeCommand() {
+        conversionProperties.setLibreOfficeCommand(" ");
+
+        assertThrows(
+                ConversionProcessingException.class,
+                () -> executor.convertToPdf(Path.of("documento.docx"), Path.of("output"))
         );
     }
 }

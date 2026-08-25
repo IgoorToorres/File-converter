@@ -37,7 +37,7 @@ public class ConversionController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
             summary = "Criar uma conversao",
-            description = "Recebe um arquivo, valida o formato inicial, salva no storage local e cria uma conversao pendente.",
+            description = "Recebe um arquivo, valida o formato inicial, converte quando houver conversor disponível e salva os arquivos no storage local.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(

@@ -11,4 +11,6 @@ public interface FileStorageService {
     void delete(String storageKey);
 
     boolean exists(String storageKey);
+
+    String store(String originalFileName, Path sourceFile);
 }
